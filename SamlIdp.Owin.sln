@@ -9,6 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SamlIdp.Owin.Tests", "SamlI
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleIdentityServer3", "SampleIdentityServer3\SampleIdentityServer3.csproj", "{278AD70F-457F-48D6-9D6B-BC930532C154}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{3A283345-D77F-4FA1-A2A4-F234DAEAEAFD}"
+	ProjectSection(SolutionItems) = preProject
+		SamlIdp.Owin\SamlIdp.Owin.nuspec = SamlIdp.Owin\SamlIdp.Owin.nuspec
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

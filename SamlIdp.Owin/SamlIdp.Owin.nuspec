@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://github.com/tgardner/SamlIdp.Owin/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/tgardner/SamlIdp.Owin</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <tags>SAML2 authentication ASP.NET SAML SSO Owin</tags>
+    <releaseNotes />
+    <dependencies>
+      <group>
+        <dependency id="Kentor.AuthServices" version="0.18.0" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

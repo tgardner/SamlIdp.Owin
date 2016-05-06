@@ -1,18 +1,16 @@
-﻿#region Using Directives
-
+﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
-#endregion
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
 [assembly: AssemblyTitle("SamlIdp.Owin")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Saml2 IdP Owin Middleware")]
+[assembly: AssemblyCompany("Trent Gardner")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("SamlIdp.Owin")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
@@ -27,6 +25,10 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 
 [assembly: Guid("6b96b6a2-0b95-499f-b693-8e5a506d4cc2")]
+
+[assembly: CLSCompliant(true)]
+
+[assembly: InternalsVisibleTo("SamlIdp.Owin.Tests")]
 
 // Version information for an assembly consists of the following four values:
 //
