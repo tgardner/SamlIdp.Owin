@@ -13,11 +13,6 @@
 
     internal class AuthorizationRequest
     {
-        public Saml2Id InResponseTo { get; set; }
-        public EntityId Issuer { get; set; }
-        public Uri ReturnUri { get; set; }
-        public string RelayState { get; set; }
-
         public AuthorizationRequest()
         {
         }
@@ -53,6 +48,11 @@
             }
         }
 
+        public Saml2Id InResponseTo { get; set; }
+        public EntityId Issuer { get; set; }
+        public Uri ReturnUri { get; set; }
+        public string RelayState { get; set; }
+
         public byte[] Serialize()
         {
             using (var ms = new MemoryStream())
@@ -66,7 +66,7 @@
             }
         }
 
-        public Saml2Response ToSaml2Response(ClaimsIdentity identity, 
+        public Saml2Response ToSaml2Response(ClaimsIdentity identity,
             X509Certificate2 signingCertificate,
             EntityId entityId,
             IDictionary<string, string> claimMappings = null)
@@ -88,7 +88,7 @@
                 nameIdClaim.Properties[ClaimProperties.SamlNameIdentifierFormat] =
                     NameIdFormat.Unspecified.GetUri().AbsoluteUri;
             }
-            
+
             return new Saml2Response(
                 entityId,
                 signingCertificate, ReturnUri,

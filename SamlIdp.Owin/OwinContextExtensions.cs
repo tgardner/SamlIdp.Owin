@@ -7,7 +7,7 @@
 
     internal static class OwinContextExtensions
     {
-        public async static Task<HttpRequestData> ToHttpRequestData(
+        public static async Task<HttpRequestData> ToHttpRequestData(
             this IOwinContext context,
             Func<byte[], byte[]> cookieDecryptor)
         {

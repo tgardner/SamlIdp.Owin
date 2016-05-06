@@ -123,6 +123,16 @@
             var authorizeRequest = ReadAuthorizationRequest(context);
             if (authorizeRequest == null) return;
 
+            var bindingType = Options.BindingType;
+
+            var serviceProvider =
+                Options.ServiceProviders?.FirstOrDefault(sp => sp.EntityId.Id == authorizeRequest.Issuer.Id);
+            if (serviceProvider != null)
+            {
+                authorizeRequest.ReturnUri = serviceProvider.AssertionConsumerServiceUri;
+                bindingType = serviceProvider.BindingType;
+            }
+
             var identity = (ClaimsIdentity) context.Request.User.Identity;
             var entityId = new EntityId(GetAbsoluteUri(context.Request, MetadataPath).AbsoluteUri);
             var response = authorizeRequest.ToSaml2Response(identity,
@@ -130,7 +140,7 @@
                 entityId,
                 Options.ClaimMappings);
 
-            Saml2Binding.Get(Options.BindingType)
+            Saml2Binding.Get(bindingType)
                 .Bind(response)
                 .Apply(context, Options.DataProtector);
         }
@@ -275,7 +285,7 @@
 
             return metadata;
         }
-        
+
         private void SetAuthorizationRequest(IOwinContext context, HttpRequestData data)
         {
             var extractedMessage = Saml2Binding.Get(Saml2BindingType.HttpRedirect)
@@ -295,14 +305,14 @@
 
             var serializedCookieData = authorizeRequest.Serialize();
             var protectedData = HttpRequestData.ConvertBinaryData(
-                    Options.DataProtector.Protect(serializedCookieData));
+                Options.DataProtector.Protect(serializedCookieData));
 
             context.Response.Cookies.Append(
                 CookieName,
                 protectedData,
                 new CookieOptions
                 {
-                    HttpOnly = true,
+                    HttpOnly = true
                 });
         }
 
@@ -315,11 +325,11 @@
             var decryptedData = Options.DataProtector.Unprotect(encryptedData);
             var request = new AuthorizationRequest(decryptedData);
             context.Response.Cookies.Delete(
-                    CookieName,
-                    new CookieOptions
-                    {
-                        HttpOnly = true
-                    });
+                CookieName,
+                new CookieOptions
+                {
+                    HttpOnly = true
+                });
 
             return request;
         }

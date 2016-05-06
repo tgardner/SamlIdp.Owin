@@ -1,11 +1,11 @@
 ﻿namespace SampleIdentityServer3
 {
     using System;
+    using System.IdentityModel.Metadata;
     using System.Security.Cryptography.X509Certificates;
     using Configuration;
     using IdentityServer3.Core.Configuration;
     using IdentityServer3.Core.Models;
-    using Microsoft.Owin;
     using Microsoft.Owin.Security.Cookies;
     using Microsoft.Owin.Security.OpenIdConnect;
     using Owin;
@@ -70,7 +70,15 @@
                 var options = new SamlIdpOptions
                 {
                     AuthenticationType = OpenIdConnectAuthenticationDefaults.AuthenticationType,
-                    SigningCertificate = SigningCertificate
+                    SigningCertificate = SigningCertificate,
+                    ServiceProviders =
+                    {
+                        new ServiceProvider
+                        {
+                            EntityId = new EntityId("urn:auth0:tgit:test"),
+                            AssertionConsumerServiceUri = new Uri("https://tgit.au.auth0.com/login/callback")
+                        }
+                    }
                 };
                 samlApp.UseSamlIdp(options);
             });

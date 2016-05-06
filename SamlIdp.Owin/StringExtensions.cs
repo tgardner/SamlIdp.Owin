@@ -14,13 +14,14 @@
             stream.Position = 0;
             return stream;
         }
+
         public static byte[] GetBinaryData(this string cookieData)
         {
             return Convert.FromBase64String(
                 cookieData
-                .Replace('_', '/')
-                .Replace('-', '+')
-                .Replace('.', '='));
+                    .Replace('_', '/')
+                    .Replace('-', '+')
+                    .Replace('.', '='));
         }
     }
 }

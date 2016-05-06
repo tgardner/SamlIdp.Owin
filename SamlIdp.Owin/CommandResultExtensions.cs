@@ -22,7 +22,7 @@
             }
 
             context.Response.ContentType = commandResult.ContentType;
-            context.Response.StatusCode = (int)commandResult.HttpStatusCode;
+            context.Response.StatusCode = (int) commandResult.HttpStatusCode;
 
             if (commandResult.Location != null)
             {
@@ -50,14 +50,14 @@
             if (serializedCookieData != null)
             {
                 var protectedData = HttpRequestData.ConvertBinaryData(
-                        dataProtector.Protect(serializedCookieData));
+                    dataProtector.Protect(serializedCookieData));
 
                 context.Response.Cookies.Append(
                     commandResult.SetCookieName,
                     protectedData,
                     new CookieOptions
                     {
-                        HttpOnly = true,
+                        HttpOnly = true
                     });
             }
 
