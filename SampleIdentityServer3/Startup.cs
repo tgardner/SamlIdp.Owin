@@ -15,7 +15,7 @@
     {
         private static readonly X509Certificate2 SigningCertificate =
             new X509Certificate2(AppDomain.CurrentDomain.BaseDirectory +
-                                 "\\Kentor.AuthServices.SampleIdentityServer3.pfx");
+                                 "\\SampleIdentityServer3.pfx");
 
         public void Configuration(IAppBuilder app)
         {
