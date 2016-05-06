@@ -1,34 +1,26 @@
 ﻿namespace SamlIdp.Owin
 {
-    #region Using Directives
-
     using System;
-    using System.Collections.Generic;
     using System.Globalization;
     using System.IdentityModel.Metadata;
     using System.IdentityModel.Tokens;
     using System.Linq;
-    using System.Net;
     using System.Security.Claims;
     using System.Threading.Tasks;
-    using System.Web.Security;
     using System.Xml;
     using System.Xml.Linq;
+    using global::Owin;
     using Kentor.AuthServices;
     using Kentor.AuthServices.Metadata;
     using Kentor.AuthServices.Saml2P;
     using Kentor.AuthServices.WebSso;
     using Microsoft.Owin;
     using Microsoft.Owin.Security;
-    using Newtonsoft.Json;
-
-    #endregion
+    using Microsoft.Owin.Security.DataProtection;
 
     public class SamlIdpMiddleware : OwinMiddleware
     {
-        private const string ProtectionPurpose = "Kentor.AuthServices";
-        private const string CookieName = "SAMLRequest";
-        private const int CookieDuration = 10;
+        private const string CookieName = "SamlIdp.Owin";
 
         private const string ResponseFormatString =
             @"<SOAP-ENV:Envelope
@@ -54,21 +46,18 @@
         protected static readonly PathString ArtifactPath = new PathString("/artifact");
         protected static readonly PathString LogoutPath = new PathString("/logout");
         protected static readonly PathString CallbackPath = new PathString("");
-
         private readonly SamlIdpOptions _options;
+
+        public SamlIdpMiddleware(OwinMiddleware next, IAppBuilder app, SamlIdpOptions options)
+            : base(next)
+        {
+            options.DataProtector = app.CreateDataProtector(typeof (SamlIdpMiddleware).FullName);
+            _options = options;
+        }
 
         protected SamlIdpOptions Options
         {
-            get
-            {
-                return _options;
-            }
-        }
-
-        public SamlIdpMiddleware(OwinMiddleware next, SamlIdpOptions options)
-            : base(next)
-        {
-            _options = options;
+            get { return _options; }
         }
 
         public override async Task Invoke(IOwinContext context)
@@ -81,7 +70,7 @@
 
             if (context.Request.Path.Equals(CallbackPath))
             {
-                await CreateAuthorizeResponse(context);
+                CreateAuthorizeResponse(context);
                 return;
             }
 
@@ -109,11 +98,10 @@
 
         private async Task CreateChallengeResponse(IOwinContext context)
         {
-            var requestData = await ReadRequestData(context.Request);
+            var requestData = await context.ToHttpRequestData(Options.DataProtector.Unprotect);
             if (requestData.QueryString["SAMLRequest"].Any())
             {
-                var authorizeRequest = CreateAuthorizeRequest(requestData);
-                SetAuthorizationRequest(context.Response, authorizeRequest);
+                SetAuthorizationRequest(context, requestData);
 
                 var redirect = GetAbsoluteUri(context.Request, CallbackPath);
                 context.Authentication.Challenge(
@@ -130,19 +118,21 @@
             }
         }
 
-        private async Task CreateAuthorizeResponse(IOwinContext context)
+        private void CreateAuthorizeResponse(IOwinContext context)
         {
-            var authorizeRequest = ReadAuthorizationRequest(context.Request);
+            var authorizeRequest = ReadAuthorizationRequest(context);
+            if (authorizeRequest == null) return;
+
             var identity = (ClaimsIdentity) context.Request.User.Identity;
-            var entityId = GetAbsoluteUri(context.Request, MetadataPath).AbsoluteUri;
+            var entityId = new EntityId(GetAbsoluteUri(context.Request, MetadataPath).AbsoluteUri);
             var response = authorizeRequest.ToSaml2Response(identity,
                 Options.SigningCertificate,
                 entityId,
                 Options.ClaimMappings);
-            var commandResult = Saml2Binding.Get(Options.BindingType)
-                .Bind(response);
 
-            await HandleCommandResult(context, commandResult);
+            Saml2Binding.Get(Options.BindingType)
+                .Bind(response)
+                .Apply(context, Options.DataProtector);
         }
 
         private async Task CreateMetadataResponse(IOwinContext context)
@@ -150,14 +140,14 @@
             var metadata = CreateIdpMetadata(context.Request)
                 .ToXmlString(Options.SigningCertificate)
                 .ToStream();
-            await metadata.CopyToAsync(context.Response.Body);
             context.Response.ContentType = "text/xml";
             context.Response.StatusCode = 200;
+            await metadata.CopyToAsync(context.Response.Body);
         }
 
         private async Task CreateLogoutResponse(IOwinContext context)
         {
-            var requestData = await ReadRequestData(context.Request);
+            var requestData = await context.ToHttpRequestData(Options.DataProtector.Unprotect);
             var binding = Saml2Binding.Get(requestData);
             if (binding == null)
             {
@@ -179,10 +169,9 @@
                 RelayState = unbindResult.RelayState
             };
 
-            var commandResult = Saml2Binding.Get(Saml2BindingType.HttpRedirect)
-                .Bind(logoutResponse);
-
-            await HandleCommandResult(context, commandResult);
+            Saml2Binding.Get(Saml2BindingType.HttpRedirect)
+                .Bind(logoutResponse)
+                .Apply(context, Options.DataProtector);
         }
 
         private static async Task CreateArtifactResponse(IOwinContext context)
@@ -233,50 +222,6 @@
 
             await response.ToStream().CopyToAsync(context.Response.Body);
             context.Response.StatusCode = 200;
-        }
-
-        private static async Task HandleCommandResult(IOwinContext context, CommandResult commandResult)
-        {
-            context.Response.StatusCode = (int)commandResult.HttpStatusCode;
-            switch (commandResult.HttpStatusCode)
-            {
-                case HttpStatusCode.SeeOther:
-                    context.Response.Headers["Location"] = commandResult.Location.OriginalString;
-                    break;
-                case HttpStatusCode.OK:
-                    var content = commandResult.Content.ToStream();
-                    await content.CopyToAsync(context.Response.Body);
-
-                    if (!string.IsNullOrEmpty(commandResult.ContentType))
-                    {
-                        context.Response.ContentType = commandResult.ContentType;
-                    }
-                    break;
-                default:
-                    context.Response.StatusCode = 400;
-                    break;
-            }
-        }
-
-        private static async Task<HttpRequestData> ReadRequestData(IOwinRequest request)
-        {
-            var formData = await request.ReadFormAsync() as IEnumerable<KeyValuePair<string, string[]>>;
-            var cookies = Enumerable.Empty<KeyValuePair<string, string>>();
-            var requestData = new HttpRequestData(request.Method,
-                request.Uri,
-                request.Path.Value,
-                formData,
-                cookies, v => MachineKey.Unprotect(v, ProtectionPurpose));
-            return requestData;
-        }
-
-        private static AuthorizationRequest ReadAuthorizationRequest(IOwinRequest request)
-        {
-            var cookie = request.Cookies[CookieName];
-            if (cookie == null) return null;
-
-            var authorizationRequest = JsonConvert.DeserializeObject<AuthorizationRequest>(cookie);
-            return authorizationRequest;
         }
 
         private ExtendedEntityDescriptor CreateIdpMetadata(IOwinRequest request, bool includeCacheDuration = true)
@@ -330,11 +275,11 @@
 
             return metadata;
         }
-
-        private static AuthorizationRequest CreateAuthorizeRequest(HttpRequestData requestData)
+        
+        private void SetAuthorizationRequest(IOwinContext context, HttpRequestData data)
         {
             var extractedMessage = Saml2Binding.Get(Saml2BindingType.HttpRedirect)
-                .Unbind(requestData, null);
+                .Unbind(data, null);
 
             var request = new Saml2AuthenticationRequest(
                 extractedMessage.Data,
@@ -342,22 +287,41 @@
 
             var authorizeRequest = new AuthorizationRequest
             {
-                InResponseTo = request.Id.Value,
-                Audience = request.Issuer.Id,
-                AssertionConsumerServiceUrl = request.AssertionConsumerServiceUrl.ToString(),
+                InResponseTo = request.Id,
+                Issuer = request.Issuer,
+                ReturnUri = request.AssertionConsumerServiceUrl,
                 RelayState = extractedMessage.RelayState
             };
-            return authorizeRequest;
+
+            var serializedCookieData = authorizeRequest.Serialize();
+            var protectedData = HttpRequestData.ConvertBinaryData(
+                    Options.DataProtector.Protect(serializedCookieData));
+
+            context.Response.Cookies.Append(
+                CookieName,
+                protectedData,
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                });
         }
 
-        private static void SetAuthorizationRequest(IOwinResponse response, AuthorizationRequest request)
+        private AuthorizationRequest ReadAuthorizationRequest(IOwinContext context)
         {
-            var json = JsonConvert.SerializeObject(request);
-            response.Cookies.Append(CookieName, json, new CookieOptions
-            {
-                Secure = true,
-                Expires = DateTime.Now.AddMinutes(CookieDuration)
-            });
+            var cookie = context.Request.Cookies[CookieName];
+            if (cookie == null) return null;
+
+            var encryptedData = cookie.GetBinaryData();
+            var decryptedData = Options.DataProtector.Unprotect(encryptedData);
+            var request = new AuthorizationRequest(decryptedData);
+            context.Response.Cookies.Delete(
+                    CookieName,
+                    new CookieOptions
+                    {
+                        HttpOnly = true
+                    });
+
+            return request;
         }
 
         private static Uri GetAbsoluteUri(IOwinRequest request, PathString path)

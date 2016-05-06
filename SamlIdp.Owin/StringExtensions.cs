@@ -1,10 +1,7 @@
 ﻿namespace SamlIdp.Owin
 {
-    #region Using Directives
-
+    using System;
     using System.IO;
-
-    #endregion
 
     internal static class StringExtensions
     {
@@ -16,6 +13,14 @@
             writer.Flush();
             stream.Position = 0;
             return stream;
+        }
+        public static byte[] GetBinaryData(this string cookieData)
+        {
+            return Convert.FromBase64String(
+                cookieData
+                .Replace('_', '/')
+                .Replace('-', '+')
+                .Replace('.', '='));
         }
     }
 }

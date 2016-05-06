@@ -1,12 +1,9 @@
 ﻿namespace SamlIdp.Owin
 {
-    #region Using Directives
-
     using System.Collections.Generic;
     using System.Security.Cryptography.X509Certificates;
     using Kentor.AuthServices.WebSso;
-
-    #endregion
+    using Microsoft.Owin.Security.DataProtection;
 
     public class SamlIdpOptions
     {
@@ -14,6 +11,7 @@
         public X509Certificate2 SigningCertificate { get; set; }
         public Saml2BindingType BindingType { get; set; }
         public IDictionary<string, string> ClaimMappings { get; set; }
+        internal IDataProtector DataProtector { get; set; }
 
         public SamlIdpOptions()
         {

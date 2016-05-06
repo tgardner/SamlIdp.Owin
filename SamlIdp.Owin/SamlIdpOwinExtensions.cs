@@ -1,16 +1,20 @@
-﻿namespace SamlIdp.Owin
+﻿// ReSharper disable once CheckNamespace
+
+namespace Owin
 {
-    #region Using Directives
-
-    using global::Owin;
-
-    #endregion
+    using System;
+    using SamlIdp.Owin;
 
     public static class SamlIdpOwinExtensions
     {
         public static void UseSamlIdp(this IAppBuilder app, SamlIdpOptions options)
         {
-            app.Use<SamlIdpMiddleware>(options);
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            app.Use<SamlIdpMiddleware>(app, options);
         }
     }
 }

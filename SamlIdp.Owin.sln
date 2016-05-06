@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SamlIdp.Owin", "SamlIdp.Owin\SamlIdp.Owin.csproj", "{6B96B6A2-0B95-499F-B693-8E5A506D4CC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SamlIdp.Owin.Tests", "SamlIdp.Owin.Tests\SamlIdp.Owin.Tests.csproj", "{59B106A7-5CD6-4AF9-87B2-0F7B25AF5EE5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleIdentityServer3", "SampleIdentityServer3\SampleIdentityServer3.csproj", "{278AD70F-457F-48D6-9D6B-BC930532C154}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{6B96B6A2-0B95-499F-B693-8E5A506D4CC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B96B6A2-0B95-499F-B693-8E5A506D4CC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B96B6A2-0B95-499F-B693-8E5A506D4CC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59B106A7-5CD6-4AF9-87B2-0F7B25AF5EE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59B106A7-5CD6-4AF9-87B2-0F7B25AF5EE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59B106A7-5CD6-4AF9-87B2-0F7B25AF5EE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59B106A7-5CD6-4AF9-87B2-0F7B25AF5EE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{278AD70F-457F-48D6-9D6B-BC930532C154}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{278AD70F-457F-48D6-9D6B-BC930532C154}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{278AD70F-457F-48D6-9D6B-BC930532C154}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{278AD70F-457F-48D6-9D6B-BC930532C154}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
