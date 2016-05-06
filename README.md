@@ -1,4 +1,6 @@
-# SamlIdp.Owin
+[![Build status](https://ci.appveyor.com/api/projects/status/0dmw9ob2l5bd9ck2?svg=true)](https://ci.appveyor.com/project/tgardner/samlidp-owin)
+SamlIdp.Owin
+=============
 
 An Owin middleware to create a SAML IdP, based on the [Kentor.AuthServices](https://github.com/KentorIT/authservices)
 
