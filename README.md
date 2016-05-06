@@ -4,6 +4,11 @@ SamlIdp.Owin
 
 An Owin middleware to create a SAML IdP, based on the [Kentor.AuthServices](https://github.com/KentorIT/authservices)
 
+## Installation
+```
+Install-Package SamlIdp.Owin
+```
+
 ## Endpoints
 * `/metadata` - SAML metadata
 * `/logout` - SSO logout
