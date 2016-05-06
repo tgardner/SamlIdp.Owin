@@ -12,7 +12,7 @@ An Owin middleware to create a SAML IdP, based on the [Kentor.AuthServices](http
 
 ## Example
 ```
-app.Map("saml", saml =>
+app.Map("/saml", saml =>
 {
     saml.UseCookieAuthentication(new CookieAuthenticationOptions
     {
